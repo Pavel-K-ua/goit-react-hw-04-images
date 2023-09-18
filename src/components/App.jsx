@@ -7,6 +7,7 @@ import { Modal } from './Modal/Modal';
 import { Spinner } from './Spinner';
 
 export const App = () => {
+  //State
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(1);
   const [per_page] = useState(12);
