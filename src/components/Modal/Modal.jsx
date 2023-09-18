@@ -1,4 +1,4 @@
-import { Component, useEffect } from 'react';
+import { useEffect } from 'react';
 import { ModalStyled, OverlayStyled } from './Modal.Styled';
 import { PropTypes } from 'prop-types';
 

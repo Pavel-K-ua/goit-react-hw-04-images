@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { getImgs } from '../fetchData/fetchData';
 import { SearchBar } from './SearchBar/SearchBar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
@@ -9,7 +9,7 @@ import { Spinner } from './Spinner';
 export const App = () => {
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(1);
-  const [per_page, setPer_page] = useState(12);
+  const [per_page] = useState(12);
   const [dataArr, setDataArr] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isEmpty, setIsEmpty] = useState(false);
@@ -18,7 +18,7 @@ export const App = () => {
   const [loading, setLoading] = useState(false);
   const [maxPages, setMaxPages] = useState(null);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     setIsEmpty(false);
     try {
@@ -32,17 +32,17 @@ export const App = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, per_page, query]);
 
   useEffect(() => {
     fetchData(query, page, per_page);
-  }, [page, query]);
+  }, [page, query, per_page, fetchData]);
 
-  const handleChangeQuery = queryStr => {
+  function handleChangeQuery(queryStr) {
     setQuery(queryStr);
     setPage(1);
     setDataArr([]);
-  };
+  }
 
   const onLoadMore = () => {
     setPage(prev => prev + 1);
