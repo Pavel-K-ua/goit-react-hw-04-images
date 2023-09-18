@@ -1,40 +1,35 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button, Form, Header, Input, Span } from './SearchBar.Styled';
 import { PropTypes } from 'prop-types';
 
-export class SearchBar extends React.Component {
-  state = {
-    query: '',
+export const SearchBar = ({ onChangeQuery }) => {
+  const [query, setQuery] = useState('');
+  const handleChange = e => {
+    setQuery(e.target.value);
   };
-  handleChange = e => {
-    this.setState({ query: e.target.value });
-  };
-  handleSubmit = e => {
+  const handleSubmit = e => {
     e.preventDefault();
-    this.props.onChangeQuery(this.state.query);
-    // this.setState({ query: '' });
+    onChangeQuery(query);
   };
-  render() {
-    return (
-      <Header>
-        <Form onSubmit={this.handleSubmit}>
-          <Button type="submit">
-            <Span>Search</Span>
-          </Button>
+  return (
+    <Header>
+      <Form onSubmit={handleSubmit}>
+        <Button type="submit">
+          <Span>Search</Span>
+        </Button>
 
-          <Input
-            value={this.state.query}
-            onChange={this.handleChange}
-            type="text"
-            autoComplete="off"
-            autoFocus
-            placeholder="Search images and photos"
-          />
-        </Form>
-      </Header>
-    );
-  }
-}
+        <Input
+          value={query}
+          onChange={handleChange}
+          type="text"
+          autoComplete="off"
+          autoFocus
+          placeholder="Search images and photos"
+        />
+      </Form>
+    </Header>
+  );
+};
 
 SearchBar.propTypes = {
   onChangeQuery: PropTypes.func,

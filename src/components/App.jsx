@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { getImgs } from '../fetchData/fetchData';
 import { SearchBar } from './SearchBar/SearchBar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
@@ -6,106 +6,71 @@ import { Button } from './Button/Button';
 import { Modal } from './Modal/Modal';
 import { Spinner } from './Spinner';
 
-class App extends React.Component {
-  state = {
-    query: '',
-    page: 1,
-    per_page: 12,
-    id: '',
-    dataArr: [],
-    isOpen: false,
-    currentImg: null,
-    currentId: null,
-    loading: false,
-    maxPages: null,
-  };
+export const App = () => {
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [per_page, setPer_page] = useState(12);
+  const [dataArr, setDataArr] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isEmpty, setIsEmpty] = useState(false);
+  const [currentImg, setCurrentImg] = useState(null);
+  const [currentId, setCurrentId] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [maxPages, setMaxPages] = useState(null);
 
-  fetchData = async () => {
-    this.setState({ loading: true });
-    // const
+  const fetchData = async () => {
+    setLoading(true);
+    setIsEmpty(false);
     try {
-      const fetch = await getImgs(
-        this.state.query,
-        this.state.page,
-        this.state.per_page
-      );
+      const fetch = await getImgs(query, page, per_page);
       const fetchArr = fetch.hits;
-
-      console.log(Math.floor(fetch.totalHits / this.state.per_page));
-      this.setState(prev => ({
-        dataArr: [...prev.dataArr, ...fetchArr],
-        maxPages: Math.floor(fetch.totalHits / this.state.per_page),
-        // maxImgs,
-        // page: (prev.page += 1),
-      }));
+      fetch.hits.length ? setIsEmpty(false) : setIsEmpty(true);
+      setDataArr(prev => [...prev, ...fetchArr]);
+      setMaxPages(Math.floor(fetch.totalHits / per_page));
     } catch (error) {
       console.log(error.massage);
     } finally {
-      this.setState({ loading: false });
+      setLoading(false);
     }
   };
 
-  async componentDidMount() {
-    await this.fetchData(
-      this.state.query,
-      this.state.page,
-      this.state.per_page
-    );
-  }
+  useEffect(() => {
+    fetchData(query, page, per_page);
+  }, [page, query]);
 
-  async componentDidUpdate(prevProps, prevState) {
-    const { page, query } = this.state;
-    if (prevState.page !== page || prevState.query !== query) {
-      await this.fetchData(
-        this.state.query,
-        this.state.page,
-        this.state.per_page
-      );
-    }
-  }
-
-  handleChangeQuery = queryStr => {
-    this.setState({ query: queryStr, page: 1, dataArr: [] });
+  const handleChangeQuery = queryStr => {
+    setQuery(queryStr);
+    setPage(1);
+    setDataArr([]);
   };
 
-  onLoadMore = () => {
-    this.setState(prev => ({
-      page: prev.page + 1,
-    }));
+  const onLoadMore = () => {
+    setPage(prev => prev + 1);
   };
 
-  handleOpenModal = (img, id) => {
-    this.setState(prev => ({
-      isOpen: !prev.isOpen,
-      currentImg: img,
-      currentId: id,
-    }));
+  const handleOpenModal = (img, id) => {
+    setIsOpen(!isOpen);
+    setCurrentImg(img);
+    setCurrentId(id);
   };
-  render() {
-    const { dataArr, currentImg, currentId, isOpen, loading, maxPages, page } =
-      this.state;
-    return (
-      <>
-        <SearchBar onChangeQuery={this.handleChangeQuery} />
-        {/* {loading && !dataArr.length ? <Spinner /> : } */}
-        {loading && <Spinner />}
 
-        <ImageGallery
-          dataArr={dataArr}
-          handleOpenModal={this.handleOpenModal}
-        />
-        {dataArr.length && page < maxPages ? (
-          <Button onLoadMore={this.onLoadMore} />
-        ) : null}
-        {/* <Loader /> */}
-        {isOpen && (
-          <Modal close={this.handleOpenModal}>
-            <img src={currentImg} alt={currentId} />
-          </Modal>
-        )}
-      </>
-    );
-  }
-}
+  return (
+    <>
+      <SearchBar onChangeQuery={handleChangeQuery} />
+      {loading && <Spinner />}
+
+      <ImageGallery dataArr={dataArr} handleOpenModal={handleOpenModal} />
+      {dataArr.length && page < maxPages ? (
+        <Button onLoadMore={onLoadMore} />
+      ) : null}
+      {isEmpty && <h2>Nothing found</h2>}
+      {isOpen && (
+        <Modal close={handleOpenModal}>
+          <img src={currentImg} alt={currentId} />
+        </Modal>
+      )}
+    </>
+  );
+};
 
 export default App;
